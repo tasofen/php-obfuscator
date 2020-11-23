@@ -4,7 +4,8 @@
 $obfuscatorPath = __DIR__.'/yakpro-po/yakpro-po.php';
 if (!is_file($obfuscatorPath)) {
     $workDir = getcwd();
-    exec('git clone https://github.com/pk-fr/yakpro-po '.__DIR__.'/yakpro-po');
+    chdir(__DIR__);
+    exec('git clone https://github.com/pk-fr/yakpro-po');
     chdir(__DIR__.'/yakpro-po');
     exec('git clone https://github.com/nikic/PHP-Parser.git');
     chdir($workDir);
