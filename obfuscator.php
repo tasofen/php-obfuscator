@@ -12,7 +12,7 @@ if (!is_file($obfuscatorPath)) {
 }
 
 if (!is_file($obfuscatorPath)) {
-    exit("Yakpro is not installer");
+    exit("Yakpro is not installer\n");
 }
 
 
@@ -63,7 +63,7 @@ foreach($argv as $item) {
 $files = array_unique($files);
 
 if (empty($files)) {
-    exit('Error path');
+    exit("Error path\n");
 }
 
 
@@ -83,9 +83,13 @@ $params = [
     '--no-obfuscate-property-name',
     '--no-obfuscate-method-name',
     '--no-obfuscate-namespace-name',
+    '--scramble-mode hexa',
+    '--scramble-length 32',
     // '--no-obfuscate-label-name',
 ];
 
+
+$gotoTags = [];
 $params = implode(' ', $params);
 $tmpFile = '/tmp/'.sha1(uniqid());
 
@@ -95,6 +99,26 @@ foreach($files as $file) {
     $data = file_get_contents($tmpFile);
     $pos = strpos($data, '*/');
     $data = '<?php '.substr($data, $pos+2);
+
+    $matches = [];
+    $pattern = '#goto\s+([0-9a-z_]+);#i';
+    preg_match_all($pattern, $data, $matches);
+
+    if ($matches) {
+        $matches = array_unique($matches[1]);
+        foreach ($matches as $tag) {
+            $pos1 = strpos($data, $tag.':');
+            $pos2 = strpos($data, $tag.':', $pos1+1);
+
+            if ($pos1 && $pos2 || isset($gotoTags[$tag])) {
+                exit("Error: dublicate tag\n");
+            } else {
+                $gotoTags[$tag] = true;
+            }
+        }
+    }
+
+
     file_put_contents($file, $data, LOCK_EX);
 }
 
